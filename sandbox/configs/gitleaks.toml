@@ -1,0 +1,5 @@
+# HootPR gitleaks config: the built-in ruleset (repository .gitleaks.toml files are ignored).
+title = "HootPR gitleaks config"
+
+[extend]
+useDefault = true

@@ -1,0 +1,9 @@
+id: py-auth-required
+language: python
+kind: injected
+title: Add audit log export endpoint
+description: Adds GET /admin/audit-log so support can export recent audit entries.
+source: hand-written
+config:
+  reviews:
+    profile: assertive

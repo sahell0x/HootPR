@@ -1,0 +1,6 @@
+id: go-map-race
+language: go
+kind: injected
+title: Bulk cache writes
+description: Adds SetMany which writes entries concurrently.
+source: hand-written

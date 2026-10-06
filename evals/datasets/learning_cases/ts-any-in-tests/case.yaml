@@ -1,0 +1,9 @@
+id: ts-any-in-tests
+language: typescript
+kind: injected
+title: Add fetchUser API helper with a test
+description: Adds fetchUser() to the API module and a vitest test that stubs fetch.
+source: hand-written
+config:
+  reviews:
+    profile: assertive

@@ -1,0 +1,7 @@
+# HootPR review profile for Python (never the repository's config).
+line-length = 120
+target-version = "py311"
+
+[lint]
+select = ["F", "E9", "B", "S", "PL", "UP", "SIM", "RUF", "ASYNC", "PERF"]
+ignore = ["PLR0913", "PLR2004", "S101"]

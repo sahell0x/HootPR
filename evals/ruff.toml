@@ -1,0 +1,16 @@
+line-length = 120
+target-version = "py312"
+# Dataset files are deliberately buggy code under review, not suite code.
+extend-exclude = ["datasets", "reports"]
+
+[lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "S", "RUF"]
+# The materializer shells out to git with argv lists, never shell strings.
+ignore = ["S603", "S607", "S404"]
+
+[lint.isort]
+known-first-party = ["hootpr_evals"]
+known-third-party = ["app"]
+
+[lint.per-file-ignores]
+"tests/**" = ["S101", "S108"]

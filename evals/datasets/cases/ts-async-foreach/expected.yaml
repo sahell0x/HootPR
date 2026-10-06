@@ -1,0 +1,8 @@
+issues:
+- id: async-foreach
+  path: src/stock.ts
+  line_range: [5, 8]
+  category: bug
+  severity: major
+  description: 'forEach does not await async callbacks: the function returns 0 before reservations finish and rejections are
+    unhandled.'

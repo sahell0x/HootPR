@@ -1,0 +1,4 @@
+User-agent: *
+Disallow: /o/
+Disallow: /orgs
+Disallow: /api/

@@ -1,0 +1,6 @@
+id: ts-prototype-pollution
+language: typescript
+kind: cve_reversed
+title: Simplify deepMerge
+description: Drops the special-case key check from deepMerge.
+source: CVE-2019-10744 (lodash defaultsDeep prototype pollution), guard removed

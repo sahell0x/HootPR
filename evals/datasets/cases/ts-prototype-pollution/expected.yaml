@@ -1,0 +1,8 @@
+issues:
+- id: proto
+  path: src/merge.ts
+  line_range: [2, 5]
+  category: security
+  severity: critical
+  description: Keys like __proto__ from untrusted input are merged recursively, enabling prototype pollution (the guard was
+    removed).

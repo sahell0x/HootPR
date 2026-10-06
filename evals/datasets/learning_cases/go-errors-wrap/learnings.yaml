@@ -1,0 +1,4 @@
+learnings:
+  - text: We return errors unwrapped on purpose (wrapping happens at the API boundary); don't suggest fmt.Errorf wrapping in store/.
+    scope: repo
+    path_glob: store/**

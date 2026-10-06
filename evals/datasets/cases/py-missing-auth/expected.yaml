@@ -1,0 +1,7 @@
+issues:
+- id: authz
+  path: api/routes.py
+  line_range: [13, 15]
+  category: security
+  severity: major
+  description: Admin delete endpoint has no require_admin dependency, so any caller can delete users (missing authorization).

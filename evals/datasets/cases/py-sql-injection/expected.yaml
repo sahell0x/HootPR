@@ -1,0 +1,7 @@
+issues:
+- id: sqli
+  path: app/users.py
+  line_range: [9, 10]
+  category: security
+  severity: critical
+  description: User-controlled name is interpolated into the SQL string (SQL injection); use a parameterized query.

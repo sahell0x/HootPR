@@ -1,0 +1,7 @@
+issues:
+- id: n-plus-one
+  path: store/orders.go
+  line_range: [12, 18]
+  category: performance
+  severity: major
+  description: One database query per order (N+1 queries); fetch all user names in one query (WHERE id = ANY($1)).

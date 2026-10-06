@@ -1,0 +1,17 @@
+{
+  "object_kind": "pipeline",
+  "project": {
+    "id": 2002,
+    "path_with_namespace": "acme-group/api",
+    "default_branch": "main",
+    "visibility_level": 0
+  },
+  "object_attributes": {
+    "id": 9,
+    "status": "failed",
+    "sha": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  "merge_request": {
+    "iid": 3
+  }
+}

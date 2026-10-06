@@ -1,0 +1,6 @@
+id: ts-leaked-secret
+language: typescript
+kind: injected
+title: Default API token for local runs
+description: Falls back to a built-in token so local runs work without configuration.
+source: hand-written

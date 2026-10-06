@@ -1,0 +1,4 @@
+learnings:
+  - text: "`any` casts are allowed in test files; do not comment on them."
+    scope: repo
+    path_glob: tests/**

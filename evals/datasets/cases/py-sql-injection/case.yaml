@@ -1,0 +1,6 @@
+id: py-sql-injection
+language: python
+kind: injected
+title: Add user lookup by name
+description: Adds find_by_name() so the admin page can search users.
+source: hand-written

@@ -1,0 +1,8 @@
+{
+  "action": "resolved",
+  "thread": {"node_id": "PRRT_1", "comments": [{"id": 501, "user": {"login": "hootpr[bot]"}}]},
+  "pull_request": {"number": 7},
+  "repository": {"id": 1001, "full_name": "acme/web", "default_branch": "main", "private": true},
+  "installation": {"id": 42},
+  "sender": {"login": "bob"}
+}

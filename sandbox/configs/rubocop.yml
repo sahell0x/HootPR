@@ -1,0 +1,5 @@
+# HootPR rubocop config: no `require:`/`plugins:` (repository .rubocop.yml files can load Ruby code).
+AllCops:
+  NewCops: enable
+  SuggestExtensions: false
+  TargetRubyVersion: 3.1

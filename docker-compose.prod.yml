@@ -1,0 +1,50 @@
+# Production overrides: `make prod-up` = docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+# Images are built on the server from this checkout. The dashboard (web, WEB_PORT) and the API (api, API_PORT)
+# stay published on their own ports for your own reverse proxy (e.g. app.example.com -> :WEB_PORT,
+# api.example.com -> :API_PORT). Everything else is internal. Set APP_BASE_URL / API_BASE_URL /
+# API_PUBLIC_URL (https) and the provider keys in .env.
+
+x-prod-backend-env: &prod-backend-env
+  APP_ENV: production
+  SANDBOX_BACKEND: docker
+  SMEE_URL: ""
+  SMEE_GITLAB_URL: ""
+  SMEE_RAZORPAY_URL: ""
+  MCP_ALLOW_HTTP: "false"
+  MCP_ALLOW_PRIVATE_HOSTS: "false"
+
+services:
+  api:
+    environment:
+      <<: *prod-backend-env
+
+  worker:
+    environment:
+      <<: *prod-backend-env
+
+  web:
+    environment:
+      NODE_ENV: production
+
+  # Nightly pg_dump into the `backups` volume (BACKUP_HOUR_UTC, keeps BACKUP_KEEP_DAYS days).
+  backup:
+    image: pgvector/pgvector:pg16
+    entrypoint: ["sh", "/backup/backup.sh"]
+    environment:
+      PGHOST: postgres
+      PGUSER: hootpr
+      PGDATABASE: hootpr
+      PGPASSWORD: ${POSTGRES_PASSWORD:-hootpr}
+      BACKUP_HOUR_UTC: ${BACKUP_HOUR_UTC:-3}
+      BACKUP_KEEP_DAYS: ${BACKUP_KEEP_DAYS:-7}
+    volumes:
+      - ./deploy/backup:/backup:ro
+      - backups:/backups
+    depends_on:
+      postgres: { condition: service_healthy }
+    mem_limit: 96m
+    networks: [hootpr]
+    restart: unless-stopped
+
+volumes:
+  backups: {}

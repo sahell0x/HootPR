@@ -1,0 +1,15 @@
+{
+  "object_kind": "note",
+  "user": {"id": 78, "username": "dave"},
+  "project": {"id": 2002, "path_with_namespace": "acme-group/api", "default_branch": "main", "visibility_level": 0},
+  "object_attributes": {
+    "id": 8101,
+    "note": "we don't need this check here",
+    "noteable_type": "MergeRequest",
+    "type": "DiffNote",
+    "discussion_id": "disc-701",
+    "position": {"new_path": "src/login.py", "new_line": 2},
+    "url": "https://gitlab.com/acme-group/api/-/merge_requests/3#note_8101"
+  },
+  "merge_request": {"iid": 3}
+}

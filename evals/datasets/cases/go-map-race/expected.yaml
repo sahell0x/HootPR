@@ -1,0 +1,7 @@
+issues:
+- id: race
+  path: cache/cache.go
+  line_range: [22, 25]
+  category: bug
+  severity: critical
+  description: 'Goroutines write to c.items without holding c.mu: a data race that can crash with ''concurrent map writes''.'

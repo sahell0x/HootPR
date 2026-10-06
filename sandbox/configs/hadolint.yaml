@@ -1,0 +1,3 @@
+# HootPR hadolint config (report everything; run_tools.py passes --no-fail).
+failure-threshold: none
+ignored: []

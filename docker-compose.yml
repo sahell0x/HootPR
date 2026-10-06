@@ -1,0 +1,214 @@
+# HootPR stack (spec §3.1, §11.3). `make up` builds and starts it; `make dev` adds the smee relay.
+# Postgres/Redis publish NO host ports (the host may run its own on 5432/6379). web/api host ports
+# are configurable with WEB_PORT / API_PORT and published on all interfaces (put your own reverse proxy /
+# firewall in front).
+name: hootpr
+
+x-backend: &backend
+  image: hootpr/backend:latest
+  env_file:
+    - path: .env
+      required: false
+  environment: &backend-env
+    DATABASE_URL: postgresql+psycopg://hootpr:${POSTGRES_PASSWORD:-hootpr}@postgres:5432/hootpr
+    REDIS_URL: redis://redis:6379/0
+    DOCKER_HOST: tcp://docker-proxy:2375
+  volumes:
+    - ./secrets:/run/secrets:ro
+  restart: unless-stopped
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: hootpr
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-hootpr}
+      POSTGRES_DB: hootpr
+    command: ["postgres", "-c", "shared_buffers=64MB", "-c", "max_connections=40"]
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hootpr -d hootpr"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    mem_limit: 256m
+    networks: [hootpr]
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--maxmemory", "48mb", "--maxmemory-policy", "noeviction", "--appendonly", "yes"]
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    mem_limit: 64m
+    networks: [hootpr]
+    restart: unless-stopped
+
+  # Only containers / networks / exec (+ ping, version) reach the Docker API; see deploy/docker-proxy.env.
+  # It lives on the internal `dockerapi` network: only `worker` (sandboxes) joins it. The internet-facing
+  # `api` must never reach it (container create = root on the host); /api/health reads the worker's
+  # docker-proxy heartbeat from Redis instead.
+  docker-proxy:
+    image: tecnativa/docker-socket-proxy:latest
+    env_file: deploy/docker-proxy.env
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    mem_limit: 32m
+    networks: [dockerapi]
+    restart: unless-stopped
+
+  api:
+    <<: *backend
+    build:
+      context: ./backend
+    command: ["sh", "-c", "alembic upgrade head && exec uvicorn --factory app.main:create_app --host 0.0.0.0 --port 8000 --workers $${API_WORKERS:-1} --proxy-headers --forwarded-allow-ips=*"]
+    ports:
+      - "${API_PORT:-8000}:8000"
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis: { condition: service_healthy }
+    # One uvicorn process is ~110 MB RSS; each extra worker is a separate ~110 MB process, so
+    # raise API_WORKERS only together with this limit.
+    mem_limit: 192m
+    networks: [hootpr]
+
+  worker:
+    <<: *backend
+    environment:
+      <<: *backend-env
+      # Egress-only network a sandbox joins while cloning (created by `make sandbox-image` or on first use).
+      SANDBOX_NETWORK: hootpr_sandbox_egress
+    command: ["sh", "-c", "exec celery -A app.worker.celery_app:celery_app worker -B -c ${REVIEW_WORKER_CONCURRENCY:-1} -l info --schedule /tmp/celerybeat-schedule"]
+    healthcheck:
+      disable: true
+    depends_on:
+      api: { condition: service_healthy }
+      redis: { condition: service_healthy }
+      docker-proxy: { condition: service_started }
+    mem_limit: 384m  # measured ~232 MiB peak during a review (Phase 2 verify); headroom for larger repos
+    networks: [hootpr, dockerapi]
+
+  web:
+    image: hootpr/web:latest
+    build:
+      context: ./frontend
+    environment:
+      # Public URL of the API the BROWSER calls (separate origin; read per request, no rebuild needed).
+      API_PUBLIC_URL: ${API_PUBLIC_URL:-http://localhost:${API_PORT:-8000}}
+    ports:
+      - "${WEB_PORT:-3000}:3000"
+    depends_on:
+      api: { condition: service_healthy }
+    mem_limit: 192m
+    networks: [hootpr]
+    restart: unless-stopped
+
+  # `build` profile: builds the per-job sandbox image (never run as a service). Prefer `make sandbox-image`.
+  sandbox:
+    image: ${SANDBOX_IMAGE:-hootpr/sandbox:latest}
+    build: ./sandbox
+    profiles: ["build"]
+    network_mode: none
+    command: ["true"]
+
+  # `dev` profile: relays smee.io channels to the api (spec §3.1). `make dev`.
+  smee:
+    image: node:22-alpine
+    profiles: ["dev"]
+    env_file:
+      - path: .env
+        required: false
+    command: ["sh", "/smee/run.sh"]
+    volumes:
+      - ./deploy/smee:/smee:ro
+    depends_on:
+      api: { condition: service_healthy }
+    mem_limit: 128m
+    networks: [hootpr]
+    restart: unless-stopped
+
+  # `tunnel` profile: Cloudflare quick tunnels for development (`make tunnel`, no account/token) when the
+  # host has no `cloudflared`. Web and API are separate origins, so there are two: tunnel-web → web:3000
+  # and tunnel (API) → api:8000. deploy/tunnel.sh writes both URLs into .env.
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    profiles: ["tunnel"]
+    command: ["tunnel", "--no-autoupdate", "--url", "http://api:8000"]
+    depends_on:
+      api: { condition: service_started }
+    mem_limit: 64m
+    networks: [hootpr]
+    restart: unless-stopped
+
+  tunnel-web:
+    image: cloudflare/cloudflared:latest
+    profiles: ["tunnel"]
+    command: ["tunnel", "--no-autoupdate", "--url", "http://web:3000"]
+    depends_on:
+      web: { condition: service_started }
+    mem_limit: 64m
+    networks: [hootpr]
+    restart: unless-stopped
+
+  # `tunnel-named` profile: optional stable URL with a named Cloudflare tunnel (CLOUDFLARE_TUNNEL_TOKEN;
+  # route one public hostname to http://web:3000 and another to http://api:8000, then set APP_BASE_URL,
+  # API_BASE_URL and API_PUBLIC_URL yourself).
+  tunnel-named:
+    image: cloudflare/cloudflared:latest
+    profiles: ["tunnel-named"]
+    command: ["tunnel", "--no-autoupdate", "run"]
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:-}
+    depends_on:
+      web: { condition: service_started }
+    mem_limit: 64m
+    networks: [hootpr]
+    restart: unless-stopped
+
+  # `test` profile: throwaway Postgres/Redis on RANDOM localhost ports for backend tests
+  # (`docker compose port postgres-test 5432` → TEST_DATABASE_URL). Testcontainers is the default.
+  postgres-test:
+    image: pgvector/pgvector:pg16
+    profiles: ["test"]
+    environment:
+      POSTGRES_USER: hootpr
+      POSTGRES_PASSWORD: hootpr
+      POSTGRES_DB: hootpr_test
+    ports:
+      - "127.0.0.1::5432"
+    tmpfs:
+      - /var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U hootpr -d hootpr_test"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    networks: [hootpr-test]
+
+  redis-test:
+    image: redis:7-alpine
+    profiles: ["test"]
+    ports:
+      - "127.0.0.1::6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    networks: [hootpr-test]
+
+networks:
+  hootpr: {}
+  hootpr-test: {}
+  dockerapi:
+    internal: true
+
+volumes:
+  pgdata: {}
+  redisdata: {}

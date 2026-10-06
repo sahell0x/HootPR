@@ -1,0 +1,6 @@
+id: ts-async-foreach
+language: typescript
+kind: injected
+title: Reserve items in parallel
+description: Replaces the sequential loop with forEach so reservations run concurrently.
+source: hand-written

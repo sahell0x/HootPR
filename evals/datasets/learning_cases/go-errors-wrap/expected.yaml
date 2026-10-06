@@ -1,0 +1,15 @@
+issues:
+  - id: rows-err
+    path: store/db.go
+    line_range: [30, 37]
+    category: bug
+    severity: major
+    description: UserIDs never checks rows.Err() after the rows.Next() loop, so an iteration error returns a truncated ID list with a nil error.
+    learning_effect: none
+  - id: unwrapped-errors
+    path: store/db.go
+    line_range: [13, 26]
+    category: maintainability
+    severity: minor
+    description: 'Errors from QueryRow, Exec and Query are returned without context; wrap them with fmt.Errorf("...: %w", err).'
+    learning_effect: suppress

@@ -1,0 +1,4 @@
+learnings:
+  - text: Every handler in `api/` that touches admin data must call `require_admin(request)` first; flag any that does not as a security issue.
+    scope: repo
+    path_glob: api/**

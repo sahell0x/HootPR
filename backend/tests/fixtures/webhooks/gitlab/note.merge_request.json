@@ -1,0 +1,23 @@
+{
+  "object_kind": "note",
+  "user": {
+    "id": 78,
+    "username": "dave"
+  },
+  "project": {
+    "id": 2002,
+    "path_with_namespace": "acme-group/api",
+    "default_branch": "main",
+    "visibility_level": 20
+  },
+  "object_attributes": {
+    "id": 8001,
+    "note": "@hootpr help",
+    "noteable_type": "MergeRequest",
+    "discussion_id": "abc123",
+    "url": "https://gitlab.com/acme-group/api/-/merge_requests/3#note_8001"
+  },
+  "merge_request": {
+    "iid": 3
+  }
+}

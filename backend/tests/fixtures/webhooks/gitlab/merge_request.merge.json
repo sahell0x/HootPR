@@ -1,0 +1,36 @@
+{
+  "object_kind": "merge_request",
+  "event_type": "merge_request",
+  "user": {
+    "id": 77,
+    "username": "carol",
+    "name": "Carol"
+  },
+  "project": {
+    "id": 2002,
+    "path_with_namespace": "acme-group/api",
+    "default_branch": "main",
+    "web_url": "https://gitlab.com/acme-group/api",
+    "visibility_level": 0
+  },
+  "object_attributes": {
+    "iid": 3,
+    "title": "Fix pagination",
+    "description": "Closes #1",
+    "state": "merged",
+    "action": "merge",
+    "draft": false,
+    "source_branch": "fix/pagination",
+    "target_branch": "main",
+    "last_commit": {
+      "id": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    },
+    "url": "https://gitlab.com/acme-group/api/-/merge_requests/3"
+  },
+  "labels": [
+    {
+      "title": "bug"
+    }
+  ],
+  "changes": {}
+}

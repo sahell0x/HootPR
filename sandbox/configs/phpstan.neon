@@ -1,0 +1,4 @@
+# HootPR phpstan config (level comes from --level; no repository includes/bootstrap files).
+parameters:
+  reportUnmatchedIgnoredErrors: false
+  tmpDir: /work/.hootpr/phpstan

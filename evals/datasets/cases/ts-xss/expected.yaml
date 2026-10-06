@@ -1,0 +1,7 @@
+issues:
+- id: xss
+  path: src/render.ts
+  line_range: [2, 2]
+  category: security
+  severity: major
+  description: User-provided comment text is inserted with innerHTML, allowing script injection (XSS).

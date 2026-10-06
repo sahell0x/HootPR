@@ -1,0 +1,7 @@
+issues:
+- id: secret
+  path: src/config.ts
+  line_range: [3, 3]
+  category: security
+  severity: critical
+  description: A hard-coded API token is committed as the fallback value (leaked secret); load it only from the environment.

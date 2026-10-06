@@ -1,0 +1,49 @@
+{
+  "action": "synchronize",
+  "number": 7,
+  "pull_request": {
+    "number": 7,
+    "title": "Add login rate limiting",
+    "body": "Implements throttling for /login.",
+    "state": "open",
+    "draft": false,
+    "merged_at": null,
+    "html_url": "https://github.com/acme/web/pull/7",
+    "user": {
+      "login": "alice",
+      "id": 501
+    },
+    "labels": [
+      {
+        "name": "backend"
+      }
+    ],
+    "base": {
+      "ref": "main",
+      "sha": "1111111111111111111111111111111111111111"
+    },
+    "head": {
+      "ref": "feat/rate-limit",
+      "sha": "3333333333333333333333333333333333333333"
+    }
+  },
+  "repository": {
+    "id": 1001,
+    "full_name": "acme/web",
+    "private": true,
+    "default_branch": "main",
+    "owner": {
+      "login": "acme",
+      "id": 9001
+    }
+  },
+  "installation": {
+    "id": 42
+  },
+  "sender": {
+    "login": "alice",
+    "id": 501
+  },
+  "before": "2222222222222222222222222222222222222222",
+  "after": "3333333333333333333333333333333333333333"
+}

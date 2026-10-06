@@ -1,0 +1,6 @@
+id: go-clean
+language: go
+kind: clean
+title: Add Min helper
+description: Adds Min next to Max and documents both.
+source: hand-written

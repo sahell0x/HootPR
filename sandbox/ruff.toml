@@ -1,0 +1,12 @@
+# Sandbox helpers run on Debian bookworm's python3 (3.11) inside the image.
+line-length = 120
+target-version = "py311"
+extend-exclude = ["tests/fixtures"]
+
+[lint]
+select = ["E", "F", "I", "UP", "B", "SIM", "S", "RUF"]
+# subprocess use is the whole point of these scripts; inputs are argv lists, never shell strings.
+ignore = ["S603", "S607", "S404"]
+
+[lint.per-file-ignores]
+"tests/**" = ["S101", "S108"]

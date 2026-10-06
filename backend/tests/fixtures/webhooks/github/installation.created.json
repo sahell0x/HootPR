@@ -1,0 +1,23 @@
+{
+  "action": "created",
+  "installation": {
+    "id": 42,
+    "account": {
+      "login": "acme",
+      "id": 9001,
+      "type": "Organization",
+      "avatar_url": "https://avatars.githubusercontent.com/u/9001"
+    }
+  },
+  "repositories": [
+    {
+      "id": 1001,
+      "full_name": "acme/web",
+      "private": true
+    }
+  ],
+  "sender": {
+    "login": "alice",
+    "id": 501
+  }
+}

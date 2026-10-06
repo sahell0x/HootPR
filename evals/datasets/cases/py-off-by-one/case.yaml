@@ -1,0 +1,6 @@
+id: py-off-by-one
+language: python
+kind: injected
+title: Switch pagination to 1-based pages
+description: Pages are now numbered from 1 to match the UI.
+source: hand-written

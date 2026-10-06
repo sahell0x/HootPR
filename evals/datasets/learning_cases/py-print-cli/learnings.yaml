@@ -1,0 +1,4 @@
+learnings:
+  - text: In this repo `print()` is the intended CLI output channel; never flag print statements in `cli/**`.
+    scope: repo
+    path_glob: cli/**

@@ -1,0 +1,15 @@
+issues:
+  - id: unchecked-response
+    path: src/api.ts
+    line_range: [9, 10]
+    category: bug
+    severity: major
+    description: fetchUser never checks res.ok, so 4xx/5xx error bodies are parsed and returned as a User.
+    learning_effect: none
+  - id: any-cast
+    path: tests/api.test.ts
+    line_range: [8, 10]
+    category: style
+    severity: nitpick
+    description: The test uses `as any` casts instead of typed stubs.
+    learning_effect: suppress

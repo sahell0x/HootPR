@@ -1,0 +1,8 @@
+issues:
+  - id: missing-require-admin
+    path: api/routes.py
+    line_range: [13, 15]
+    category: security
+    severity: major
+    description: export_audit_log returns admin audit data without calling require_admin(request) first, so any caller can read the audit log.
+    learning_effect: require

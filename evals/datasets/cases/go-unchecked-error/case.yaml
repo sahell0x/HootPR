@@ -1,0 +1,6 @@
+id: go-unchecked-error
+language: go
+kind: injected
+title: Shorten config loading
+description: Condenses Load() into fewer lines.
+source: hand-written

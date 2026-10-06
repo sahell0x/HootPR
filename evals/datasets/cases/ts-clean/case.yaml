@@ -1,0 +1,6 @@
+id: ts-clean
+language: typescript
+kind: clean
+title: Name the cents constant
+description: Replaces a magic number with a named constant and documents formatPrice.
+source: hand-written

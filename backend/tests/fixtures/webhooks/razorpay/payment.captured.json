@@ -1,0 +1,19 @@
+{
+  "entity": "event",
+  "account_id": "acc_TEST",
+  "event": "payment.captured",
+  "contains": ["payment"],
+  "payload": {
+    "payment": {
+      "entity": {
+        "id": "pay_ABC",
+        "entity": "payment",
+        "order_id": "order_ABC",
+        "amount": 4900,
+        "currency": "INR",
+        "status": "captured"
+      }
+    }
+  },
+  "created_at": 1790000000
+}

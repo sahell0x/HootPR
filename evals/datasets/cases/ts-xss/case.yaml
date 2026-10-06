@@ -1,0 +1,6 @@
+id: ts-xss
+language: typescript
+kind: injected
+title: Render comments as HTML paragraphs
+description: Wraps each comment in a styled paragraph.
+source: hand-written

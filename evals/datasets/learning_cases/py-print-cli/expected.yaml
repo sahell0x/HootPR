@@ -1,0 +1,15 @@
+issues:
+  - id: missing-arg
+    path: cli/main.py
+    line_range: [6, 7]
+    category: bug
+    severity: major
+    description: parse_limit indexes argv[1] and calls int() unchecked, so running the command without an argument (or with a non-number) crashes with IndexError/ValueError instead of a usage message.
+    learning_effect: none
+  - id: print-output
+    path: cli/main.py
+    line_range: [12, 18]
+    category: maintainability
+    severity: nitpick
+    description: Progress output uses print() instead of a logger (report() and main()), which cannot be silenced or redirected.
+    learning_effect: suppress

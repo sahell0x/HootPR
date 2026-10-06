@@ -1,0 +1,1084 @@
+{
+  "$defs": {
+    "AstGrepRule": {
+      "additionalProperties": false,
+      "properties": {
+        "files": {
+          "description": "Optional globs limiting the files this rule applies to.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Files",
+          "type": "array"
+        },
+        "id": {
+          "description": "Unique rule id, shown with each match.",
+          "pattern": "^[A-Za-z0-9_-]{1,64}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "language": {
+          "description": "ast-grep language name, e.g. python, typescript, go.",
+          "maxLength": 32,
+          "minLength": 1,
+          "title": "Language",
+          "type": "string"
+        },
+        "message": {
+          "description": "Instruction HootPR's reviewer receives for every match.",
+          "maxLength": 1000,
+          "minLength": 1,
+          "title": "Message",
+          "type": "string"
+        },
+        "rule": {
+          "additionalProperties": true,
+          "description": "ast-grep rule object (pattern, kind, regex, inside, has, all, any, not, ...).",
+          "minProperties": 1,
+          "title": "Rule",
+          "type": "object"
+        },
+        "severity": {
+          "default": "warning",
+          "description": "Hint for how serious a match is.",
+          "enum": [
+            "hint",
+            "info",
+            "warning",
+            "error"
+          ],
+          "title": "Severity",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "language",
+        "message",
+        "rule"
+      ],
+      "title": "AstGrepRule",
+      "type": "object"
+    },
+    "AstGrepTool": {
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "default": true,
+          "description": "Enable this feature.",
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "essential_rules": {
+          "default": false,
+          "description": "Also apply the ast-grep-essentials security rule pack.",
+          "title": "Essential Rules",
+          "type": "boolean"
+        },
+        "rule_dirs": {
+          "description": "Repository directories with ast-grep rule YAML files (read from the base branch).",
+          "items": {
+            "type": "string"
+          },
+          "title": "Rule Dirs",
+          "type": "array"
+        },
+        "util_dirs": {
+          "description": "Repository directories with ast-grep utility rules.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Util Dirs",
+          "type": "array"
+        }
+      },
+      "title": "AstGrepTool",
+      "type": "object"
+    },
+    "AutoReview": {
+      "additionalProperties": false,
+      "properties": {
+        "auto_incremental_review": {
+          "default": true,
+          "description": "Automatically review new commits pushed to a reviewed PR.",
+          "title": "Auto Incremental Review",
+          "type": "boolean"
+        },
+        "auto_pause_after_reviewed_commits": {
+          "default": 5,
+          "description": "Pause automatic reviews after this many reviewed commits (0 never pauses). Resume with @hootpr resume.",
+          "minimum": 0,
+          "title": "Auto Pause After Reviewed Commits",
+          "type": "integer"
+        },
+        "base_branches": {
+          "description": "Regular expressions of extra base branches to review; the default branch is always reviewed.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Base Branches",
+          "type": "array"
+        },
+        "description_keyword": {
+          "default": "",
+          "description": "When set, only review PRs whose description contains this keyword.",
+          "title": "Description Keyword",
+          "type": "string"
+        },
+        "drafts": {
+          "default": false,
+          "description": "Review draft pull requests.",
+          "title": "Drafts",
+          "type": "boolean"
+        },
+        "enabled": {
+          "default": true,
+          "description": "Automatically review pull requests.",
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "ignore_title_keywords": {
+          "description": "Skip PRs whose title contains any of these keywords (case-insensitive).",
+          "items": {
+            "type": "string"
+          },
+          "title": "Ignore Title Keywords",
+          "type": "array"
+        },
+        "ignore_usernames": {
+          "description": "Skip PRs opened by these usernames.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Ignore Usernames",
+          "type": "array"
+        },
+        "labels": {
+          "description": "Only review PRs with one of these labels; prefix a label with ! to skip PRs that carry it.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Labels",
+          "type": "array"
+        }
+      },
+      "title": "AutoReview",
+      "type": "object"
+    },
+    "Chat": {
+      "additionalProperties": false,
+      "properties": {
+        "auto_reply": {
+          "default": true,
+          "description": "Reply to comments in threads HootPR started without requiring an @hootpr mention.",
+          "title": "Auto Reply",
+          "type": "boolean"
+        }
+      },
+      "title": "Chat",
+      "type": "object"
+    },
+    "CodeGeneration": {
+      "additionalProperties": false,
+      "properties": {
+        "docstrings": {
+          "$ref": "#/$defs/DocstringGen",
+          "description": "Docstring generation settings."
+        },
+        "unit_tests": {
+          "$ref": "#/$defs/UnitTestGen",
+          "description": "Unit test generation settings."
+        }
+      },
+      "title": "CodeGeneration",
+      "type": "object"
+    },
+    "CodeGuidelines": {
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "default": true,
+          "description": "Read coding guideline files from the base branch and apply them in reviews.",
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "file_patterns": {
+          "description": "Extra glob patterns of guideline files, added to the built-in list (CLAUDE.md, AGENTS.md, .cursorrules, ...).",
+          "items": {
+            "type": "string"
+          },
+          "title": "File Patterns",
+          "type": "array"
+        }
+      },
+      "title": "CodeGuidelines",
+      "type": "object"
+    },
+    "CustomCheck": {
+      "additionalProperties": false,
+      "properties": {
+        "instructions": {
+          "description": "What the check verifies, in natural language.",
+          "title": "Instructions",
+          "type": "string"
+        },
+        "mode": {
+          "default": "warning",
+          "description": "Check mode. off: skip the check; warning: report it; error: report it and fail the check.",
+          "enum": [
+            "off",
+            "warning",
+            "error"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "name": {
+          "description": "Name of the custom pre-merge check.",
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "instructions"
+      ],
+      "title": "CustomCheck",
+      "type": "object"
+    },
+    "CustomRecipe": {
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "default": true,
+          "description": "Enable this recipe.",
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "instructions": {
+          "description": "What HootPR should change in the pull request.",
+          "maxLength": 10000,
+          "minLength": 1,
+          "title": "Instructions",
+          "type": "string"
+        },
+        "name": {
+          "description": "Recipe name used in @hootpr run <name> (case-insensitive).",
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9 _.-]*$",
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "instructions"
+      ],
+      "title": "CustomRecipe",
+      "type": "object"
+    },
+    "DocstringCheck": {
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "default": "off",
+          "description": "Docstring coverage check. off: skip the check; warning: report it; error: report it and fail the check.",
+          "enum": [
+            "off",
+            "warning",
+            "error"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "threshold": {
+          "default": 80,
+          "description": "Minimum docstring coverage percentage.",
+          "maximum": 100,
+          "minimum": 0,
+          "title": "Threshold",
+          "type": "integer"
+        }
+      },
+      "title": "DocstringCheck",
+      "type": "object"
+    },
+    "DocstringGen": {
+      "additionalProperties": false,
+      "properties": {
+        "language": {
+          "default": "en-US",
+          "description": "Language of generated docstrings.",
+          "title": "Language",
+          "type": "string"
+        },
+        "path_instructions": {
+          "description": "Extra docstring instructions for files matching a glob.",
+          "items": {
+            "$ref": "#/$defs/PathInstruction"
+          },
+          "title": "Path Instructions",
+          "type": "array"
+        }
+      },
+      "title": "DocstringGen",
+      "type": "object"
+    },
+    "FinishingTouches": {
+      "additionalProperties": false,
+      "properties": {
+        "autofix": {
+          "$ref": "#/$defs/Toggle",
+          "description": "Allow @hootpr autofix."
+        },
+        "ci_analysis": {
+          "$ref": "#/$defs/Toggle",
+          "description": "Comment an analysis of failed CI jobs (GitHub Actions / GitLab pipelines)."
+        },
+        "custom": {
+          "description": "Named custom finishing touches, run with @hootpr run <name>.",
+          "items": {
+            "$ref": "#/$defs/CustomRecipe"
+          },
+          "title": "Custom",
+          "type": "array"
+        },
+        "docstrings": {
+          "$ref": "#/$defs/Toggle",
+          "description": "Allow @hootpr generate docstrings."
+        },
+        "fix_ci": {
+          "$ref": "#/$defs/Toggle",
+          "description": "Allow @hootpr fix ci."
+        },
+        "merge_conflicts": {
+          "$ref": "#/$defs/Toggle",
+          "description": "Allow @hootpr resolve merge conflict."
+        },
+        "simplify": {
+          "$ref": "#/$defs/Toggle",
+          "description": "Allow @hootpr simplify."
+        },
+        "unit_tests": {
+          "$ref": "#/$defs/Toggle",
+          "description": "Allow @hootpr generate unit tests."
+        }
+      },
+      "title": "FinishingTouches",
+      "type": "object"
+    },
+    "IssueEnrichment": {
+      "additionalProperties": false,
+      "properties": {
+        "auto_enrich": {
+          "$ref": "#/$defs/Toggle",
+          "description": "Comment on new issues with possible duplicates, suggested labels and suggested assignees."
+        },
+        "labeling": {
+          "$ref": "#/$defs/IssueLabeling",
+          "description": "Label suggestions for new issues."
+        }
+      },
+      "title": "IssueEnrichment",
+      "type": "object"
+    },
+    "IssueLabeling": {
+      "additionalProperties": false,
+      "properties": {
+        "auto_apply_labels": {
+          "default": false,
+          "description": "Apply suggested labels instead of only suggesting them.",
+          "title": "Auto Apply Labels",
+          "type": "boolean"
+        },
+        "labeling_instructions": {
+          "description": "Labels HootPR may suggest and when (default: all repository labels).",
+          "items": {
+            "$ref": "#/$defs/LabelingInstruction"
+          },
+          "title": "Labeling Instructions",
+          "type": "array"
+        }
+      },
+      "title": "IssueLabeling",
+      "type": "object"
+    },
+    "KnowledgeBase": {
+      "additionalProperties": false,
+      "properties": {
+        "code_guidelines": {
+          "$ref": "#/$defs/CodeGuidelines",
+          "description": "Coding guideline files (CLAUDE.md, AGENTS.md, .cursorrules, ...)."
+        },
+        "issues": {
+          "$ref": "#/$defs/ScopeSetting",
+          "description": "Use issues as review context."
+        },
+        "learnings": {
+          "$ref": "#/$defs/LearningsSetting",
+          "description": "Team preferences HootPR learns from chat and applies in reviews."
+        },
+        "linked_repositories": {
+          "description": "Other repositories used as review context.",
+          "items": {
+            "$ref": "#/$defs/LinkedRepository"
+          },
+          "title": "Linked Repositories",
+          "type": "array"
+        },
+        "mcp": {
+          "$ref": "#/$defs/McpSetting",
+          "description": "MCP server integration."
+        },
+        "opt_out": {
+          "default": false,
+          "description": "Opt out of the knowledge base: HootPR stores no learnings and deletes existing ones.",
+          "title": "Opt Out",
+          "type": "boolean"
+        },
+        "pull_requests": {
+          "$ref": "#/$defs/ScopeSetting",
+          "description": "Use past pull requests as review context."
+        },
+        "web_search": {
+          "$ref": "#/$defs/OffToggle",
+          "description": "Search the web for review context."
+        }
+      },
+      "title": "KnowledgeBase",
+      "type": "object"
+    },
+    "LabelingInstruction": {
+      "additionalProperties": false,
+      "properties": {
+        "instructions": {
+          "description": "When HootPR should suggest this label.",
+          "maxLength": 2000,
+          "minLength": 1,
+          "title": "Instructions",
+          "type": "string"
+        },
+        "label": {
+          "description": "Label name.",
+          "maxLength": 100,
+          "minLength": 1,
+          "title": "Label",
+          "type": "string"
+        }
+      },
+      "required": [
+        "label",
+        "instructions"
+      ],
+      "title": "LabelingInstruction",
+      "type": "object"
+    },
+    "LearningsSetting": {
+      "additionalProperties": false,
+      "properties": {
+        "scope": {
+          "default": "auto",
+          "description": "Which learnings apply: local (this repository), global (whole organization) or auto (local for public repositories, global for private).",
+          "enum": [
+            "local",
+            "global",
+            "auto"
+          ],
+          "title": "Scope",
+          "type": "string"
+        }
+      },
+      "title": "LearningsSetting",
+      "type": "object"
+    },
+    "LinkedRepository": {
+      "additionalProperties": false,
+      "properties": {
+        "instructions": {
+          "default": "",
+          "description": "How the linked repository relates to this one.",
+          "title": "Instructions",
+          "type": "string"
+        },
+        "repository": {
+          "description": "Full name of a linked repository (owner/name).",
+          "minLength": 1,
+          "title": "Repository",
+          "type": "string"
+        }
+      },
+      "required": [
+        "repository"
+      ],
+      "title": "LinkedRepository",
+      "type": "object"
+    },
+    "McpSetting": {
+      "additionalProperties": false,
+      "properties": {
+        "usage": {
+          "default": "auto",
+          "description": "Use connected MCP servers as review context.",
+          "enum": [
+            "auto",
+            "enabled",
+            "disabled"
+          ],
+          "title": "Usage",
+          "type": "string"
+        }
+      },
+      "title": "McpSetting",
+      "type": "object"
+    },
+    "ModeOnly": {
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "default": "warning",
+          "description": "Check mode. off: skip the check; warning: report it; error: report it and fail the check.",
+          "enum": [
+            "off",
+            "warning",
+            "error"
+          ],
+          "title": "Mode",
+          "type": "string"
+        }
+      },
+      "title": "ModeOnly",
+      "type": "object"
+    },
+    "OffToggle": {
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "default": false,
+          "description": "Enable this feature.",
+          "title": "Enabled",
+          "type": "boolean"
+        }
+      },
+      "title": "OffToggle",
+      "type": "object"
+    },
+    "PathInstruction": {
+      "additionalProperties": false,
+      "properties": {
+        "instructions": {
+          "description": "Additional review instructions for the matching files.",
+          "maxLength": 20000,
+          "title": "Instructions",
+          "type": "string"
+        },
+        "path": {
+          "description": "Glob of files these instructions apply to.",
+          "minLength": 1,
+          "title": "Path",
+          "type": "string"
+        }
+      },
+      "required": [
+        "path",
+        "instructions"
+      ],
+      "title": "PathInstruction",
+      "type": "object"
+    },
+    "PhpstanTool": {
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "default": true,
+          "description": "Enable this feature.",
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "level": {
+          "default": 5,
+          "description": "PHPStan rule level (0-9).",
+          "maximum": 9,
+          "minimum": 0,
+          "title": "Level",
+          "type": "integer"
+        }
+      },
+      "title": "PhpstanTool",
+      "type": "object"
+    },
+    "PostMergeActions": {
+      "additionalProperties": false,
+      "properties": {
+        "changelog": {
+          "$ref": "#/$defs/OffToggle",
+          "description": "Draft a changelog entry for the merged pull request (posted as a comment)."
+        },
+        "custom": {
+          "description": "Custom post-merge actions written in natural language.",
+          "items": {
+            "$ref": "#/$defs/PostMergeRecipe"
+          },
+          "title": "Custom",
+          "type": "array"
+        },
+        "follow_up_issue": {
+          "$ref": "#/$defs/OffToggle",
+          "description": "Open an issue listing HootPR comments that were still unresolved at merge."
+        }
+      },
+      "title": "PostMergeActions",
+      "type": "object"
+    },
+    "PostMergeRecipe": {
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "default": true,
+          "description": "Enable this post-merge action.",
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "instructions": {
+          "description": "What HootPR should write after the merge (posted as a comment).",
+          "maxLength": 10000,
+          "minLength": 1,
+          "title": "Instructions",
+          "type": "string"
+        },
+        "name": {
+          "description": "Name of the post-merge action.",
+          "maxLength": 64,
+          "minLength": 1,
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "instructions"
+      ],
+      "title": "PostMergeRecipe",
+      "type": "object"
+    },
+    "PreMergeChecks": {
+      "additionalProperties": false,
+      "properties": {
+        "custom_checks": {
+          "description": "Custom pre-merge checks written in natural language.",
+          "items": {
+            "$ref": "#/$defs/CustomCheck"
+          },
+          "title": "Custom Checks",
+          "type": "array"
+        },
+        "description": {
+          "$ref": "#/$defs/ModeOnly",
+          "description": "Check that the PR description is complete."
+        },
+        "docstrings": {
+          "$ref": "#/$defs/DocstringCheck",
+          "description": "Check docstring coverage of changed code."
+        },
+        "issue_assessment": {
+          "$ref": "#/$defs/ModeOnly",
+          "description": "Check that the PR addresses the linked issues."
+        },
+        "title": {
+          "$ref": "#/$defs/TitleCheck",
+          "description": "Check that the PR title is descriptive."
+        }
+      },
+      "title": "PreMergeChecks",
+      "type": "object"
+    },
+    "Reviews": {
+      "additionalProperties": false,
+      "properties": {
+        "abort_on_close": {
+          "default": true,
+          "description": "Abort an in-progress review when the PR is closed.",
+          "title": "Abort On Close",
+          "type": "boolean"
+        },
+        "assess_linked_issues": {
+          "default": true,
+          "description": "Assess whether the PR resolves its linked issues.",
+          "title": "Assess Linked Issues",
+          "type": "boolean"
+        },
+        "ast_grep_instructions": {
+          "description": "Inline ast-grep rules; code that matches a rule gets the rule's message as an extra review instruction.",
+          "items": {
+            "$ref": "#/$defs/AstGrepRule"
+          },
+          "title": "Ast Grep Instructions",
+          "type": "array"
+        },
+        "auto_review": {
+          "$ref": "#/$defs/AutoReview",
+          "description": "When HootPR reviews automatically."
+        },
+        "auto_title_placeholder": {
+          "default": "@hootpr",
+          "description": "Text in the PR title that HootPR replaces with a generated title.",
+          "title": "Auto Title Placeholder",
+          "type": "string"
+        },
+        "changed_files_summary": {
+          "default": true,
+          "description": "Include the changes table in the walkthrough.",
+          "title": "Changed Files Summary",
+          "type": "boolean"
+        },
+        "collapse_walkthrough": {
+          "default": false,
+          "description": "Collapse the walkthrough comment by default.",
+          "title": "Collapse Walkthrough",
+          "type": "boolean"
+        },
+        "commit_status": {
+          "default": true,
+          "description": "Set a commit status while the review is in progress.",
+          "title": "Commit Status",
+          "type": "boolean"
+        },
+        "disable_cache": {
+          "default": false,
+          "description": "Do not reuse cached code graphs or tool results.",
+          "title": "Disable Cache",
+          "type": "boolean"
+        },
+        "estimate_code_review_effort": {
+          "default": true,
+          "description": "Estimate the code review effort in the walkthrough.",
+          "title": "Estimate Code Review Effort",
+          "type": "boolean"
+        },
+        "finishing_touches": {
+          "$ref": "#/$defs/FinishingTouches",
+          "description": "Commands that generate code for the PR (docstrings, unit tests, ...)."
+        },
+        "high_level_summary": {
+          "default": true,
+          "description": "Write a high-level summary into the PR description.",
+          "title": "High Level Summary",
+          "type": "boolean"
+        },
+        "high_level_summary_placeholder": {
+          "default": "@hootpr summary",
+          "description": "Text in the PR description that HootPR replaces with its summary.",
+          "title": "High Level Summary Placeholder",
+          "type": "string"
+        },
+        "path_filters": {
+          "description": "Globs of files to include in the review; prefix with ! to exclude.",
+          "items": {
+            "type": "string"
+          },
+          "title": "Path Filters",
+          "type": "array"
+        },
+        "path_instructions": {
+          "description": "Extra review instructions for files matching a glob.",
+          "items": {
+            "$ref": "#/$defs/PathInstruction"
+          },
+          "title": "Path Instructions",
+          "type": "array"
+        },
+        "poem": {
+          "default": false,
+          "description": "Add a short poem to the walkthrough.",
+          "title": "Poem",
+          "type": "boolean"
+        },
+        "post_merge_actions": {
+          "$ref": "#/$defs/PostMergeActions",
+          "description": "Actions HootPR runs when a pull request is merged."
+        },
+        "pre_merge_checks": {
+          "$ref": "#/$defs/PreMergeChecks",
+          "description": "Checks run before the PR is merged."
+        },
+        "profile": {
+          "default": "chill",
+          "description": "Review profile: chill reports fewer, higher-confidence issues; assertive also reports nitpicks.",
+          "enum": [
+            "chill",
+            "assertive"
+          ],
+          "title": "Profile",
+          "type": "string"
+        },
+        "related_prs": {
+          "default": true,
+          "description": "List possibly related pull requests in the walkthrough.",
+          "title": "Related Prs",
+          "type": "boolean"
+        },
+        "request_changes_workflow": {
+          "default": false,
+          "description": "Approve the PR once all HootPR blocking comments are resolved; request changes while any are open.",
+          "title": "Request Changes Workflow",
+          "type": "boolean"
+        },
+        "review_status": {
+          "default": true,
+          "description": "Post a review status message when a review is skipped or paused.",
+          "title": "Review Status",
+          "type": "boolean"
+        },
+        "sequence_diagrams": {
+          "default": true,
+          "description": "Include sequence diagrams in the walkthrough.",
+          "title": "Sequence Diagrams",
+          "type": "boolean"
+        },
+        "slop_detection": {
+          "$ref": "#/$defs/SlopDetection",
+          "description": "Detect low-quality (slop) pull requests."
+        },
+        "tools": {
+          "$ref": "#/$defs/Tools",
+          "description": "Static analysis and security tools."
+        }
+      },
+      "title": "Reviews",
+      "type": "object"
+    },
+    "ScopeSetting": {
+      "additionalProperties": false,
+      "properties": {
+        "scope": {
+          "default": "auto",
+          "description": "local: this repository only; global: the whole organization; auto: local for public repositories, global for private ones.",
+          "enum": [
+            "local",
+            "global",
+            "auto"
+          ],
+          "title": "Scope",
+          "type": "string"
+        }
+      },
+      "title": "ScopeSetting",
+      "type": "object"
+    },
+    "SemgrepTool": {
+      "additionalProperties": false,
+      "properties": {
+        "config_file": {
+          "default": "",
+          "description": "Path to a Semgrep config file in the repository.",
+          "title": "Config File",
+          "type": "string"
+        },
+        "enabled": {
+          "default": true,
+          "description": "Enable this feature.",
+          "title": "Enabled",
+          "type": "boolean"
+        }
+      },
+      "title": "SemgrepTool",
+      "type": "object"
+    },
+    "SlopDetection": {
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "default": true,
+          "description": "Flag low-quality or AI-generated \"slop\" pull requests (boilerplate text, unrelated churn, calls to symbols that do not exist, huge unreviewable diffs).",
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "label": {
+          "default": "slop",
+          "description": "Label added to flagged pull requests (empty: add no label).",
+          "maxLength": 50,
+          "title": "Label",
+          "type": "string"
+        }
+      },
+      "title": "SlopDetection",
+      "type": "object"
+    },
+    "TitleCheck": {
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "default": "warning",
+          "description": "Pull request title check. off: skip the check; warning: report it; error: report it and fail the check.",
+          "enum": [
+            "off",
+            "warning",
+            "error"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "requirements": {
+          "default": "",
+          "description": "Extra requirements the PR title must satisfy.",
+          "title": "Requirements",
+          "type": "string"
+        }
+      },
+      "title": "TitleCheck",
+      "type": "object"
+    },
+    "Toggle": {
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "default": true,
+          "description": "Enable this feature.",
+          "title": "Enabled",
+          "type": "boolean"
+        }
+      },
+      "title": "Toggle",
+      "type": "object"
+    },
+    "Tools": {
+      "additionalProperties": false,
+      "properties": {
+        "actionlint": {
+          "$ref": "#/$defs/Toggle",
+          "description": "Run actionlint (GitHub Actions workflows) on changed files."
+        },
+        "ast_grep": {
+          "$ref": "#/$defs/AstGrepTool",
+          "description": "AST-grep instructions (syntax-aware review rules)."
+        },
+        "checkov": {
+          "$ref": "#/$defs/Toggle",
+          "description": "Run Checkov (infrastructure-as-code scanning) on changed files."
+        },
+        "eslint": {
+          "$ref": "#/$defs/Toggle",
+          "description": "Run ESLint (JavaScript/TypeScript) on changed files."
+        },
+        "gitleaks": {
+          "$ref": "#/$defs/Toggle",
+          "description": "Run Gitleaks (secret scanning) on changed files."
+        },
+        "golangci_lint": {
+          "$ref": "#/$defs/Toggle",
+          "description": "Run golangci-lint (Go) on changed files."
+        },
+        "hadolint": {
+          "$ref": "#/$defs/Toggle",
+          "description": "Run Hadolint (Dockerfiles) on changed files."
+        },
+        "markdownlint": {
+          "$ref": "#/$defs/Toggle",
+          "description": "Run markdownlint (Markdown) on changed files."
+        },
+        "phpstan": {
+          "$ref": "#/$defs/PhpstanTool",
+          "description": "Run PHPStan (PHP) on changed files."
+        },
+        "rubocop": {
+          "$ref": "#/$defs/Toggle",
+          "description": "Run RuboCop (Ruby) on changed files."
+        },
+        "ruff": {
+          "$ref": "#/$defs/Toggle",
+          "description": "Run Ruff (Python) on changed files."
+        },
+        "semgrep": {
+          "$ref": "#/$defs/SemgrepTool",
+          "description": "Run Semgrep on changed files."
+        },
+        "shellcheck": {
+          "$ref": "#/$defs/Toggle",
+          "description": "Run ShellCheck (shell scripts) on changed files."
+        },
+        "swiftlint": {
+          "$ref": "#/$defs/Toggle",
+          "description": "Run SwiftLint (Swift) on changed files."
+        },
+        "trivy": {
+          "$ref": "#/$defs/Toggle",
+          "description": "Run Trivy (dependency and IaC scanning) on changed files."
+        },
+        "yamllint": {
+          "$ref": "#/$defs/Toggle",
+          "description": "Run yamllint (YAML) on changed files."
+        }
+      },
+      "title": "Tools",
+      "type": "object"
+    },
+    "UnitTestGen": {
+      "additionalProperties": false,
+      "properties": {
+        "path_instructions": {
+          "description": "Extra unit test instructions for files matching a glob.",
+          "items": {
+            "$ref": "#/$defs/PathInstruction"
+          },
+          "title": "Path Instructions",
+          "type": "array"
+        }
+      },
+      "title": "UnitTestGen",
+      "type": "object"
+    }
+  },
+  "$id": "http://localhost:3000/schema/hootpr.v1.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "chat": {
+      "$ref": "#/$defs/Chat",
+      "description": "Chat settings."
+    },
+    "code_generation": {
+      "$ref": "#/$defs/CodeGeneration",
+      "description": "Code generation settings."
+    },
+    "early_access": {
+      "default": false,
+      "description": "Enable early-access features.",
+      "title": "Early Access",
+      "type": "boolean"
+    },
+    "inheritance": {
+      "default": false,
+      "description": "Merge this configuration with repository, organization and default settings instead of replacing them.",
+      "title": "Inheritance",
+      "type": "boolean"
+    },
+    "issue_enrichment": {
+      "$ref": "#/$defs/IssueEnrichment",
+      "description": "Issue enrichment settings."
+    },
+    "knowledge_base": {
+      "$ref": "#/$defs/KnowledgeBase",
+      "description": "Knowledge base settings."
+    },
+    "language": {
+      "default": "en-US",
+      "description": "Language of HootPR's comments (ISO code, e.g. en-US).",
+      "title": "Language",
+      "type": "string"
+    },
+    "reviews": {
+      "$ref": "#/$defs/Reviews",
+      "description": "Review settings."
+    },
+    "tone_instructions": {
+      "default": "",
+      "description": "Custom tone for HootPR's comments (at most 250 characters).",
+      "maxLength": 250,
+      "title": "Tone Instructions",
+      "type": "string"
+    }
+  },
+  "title": "HootPR configuration",
+  "type": "object"
+}

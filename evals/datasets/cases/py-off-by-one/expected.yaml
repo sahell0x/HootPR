@@ -1,0 +1,7 @@
+issues:
+- id: off-by-one
+  path: app/pagination.py
+  line_range: [4, 5]
+  category: bug
+  severity: major
+  description: The page end adds one extra element, so each page returns size + 1 items and overlaps the next page (off-by-one).

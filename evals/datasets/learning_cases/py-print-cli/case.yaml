@@ -1,0 +1,9 @@
+id: py-print-cli
+language: python
+kind: injected
+title: Show sync progress in the CLI
+description: The sync command now takes the item limit as its first argument and prints progress while it runs.
+source: hand-written
+config:
+  reviews:
+    profile: assertive

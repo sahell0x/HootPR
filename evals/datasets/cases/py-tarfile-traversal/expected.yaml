@@ -1,0 +1,8 @@
+issues:
+- id: tar-slip
+  path: app/archive.py
+  line_range: [6, 7]
+  category: security
+  severity: critical
+  description: Archive members are extracted without validating their paths, so ../ entries can write outside dest (tar path
+    traversal, CVE-2007-4559).

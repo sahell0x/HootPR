@@ -1,0 +1,30 @@
+{
+  "action": "created",
+  "issue": {
+    "number": 7,
+    "pull_request": {
+      "url": "https://api.github.com/repos/acme/web/pulls/7"
+    }
+  },
+  "comment": {
+    "id": 555,
+    "body": "@hootpr review",
+    "user": {
+      "login": "bob"
+    },
+    "html_url": "https://github.com/acme/web/pull/7#issuecomment-555",
+    "author_association": "MEMBER"
+  },
+  "repository": {
+    "id": 1001,
+    "full_name": "acme/web",
+    "private": true,
+    "default_branch": "main"
+  },
+  "installation": {
+    "id": 42
+  },
+  "sender": {
+    "login": "bob"
+  }
+}

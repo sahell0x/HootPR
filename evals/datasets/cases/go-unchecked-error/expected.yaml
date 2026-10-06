@@ -1,0 +1,13 @@
+issues:
+- id: readfile-err
+  path: config/config.go
+  line_range: [13, 13]
+  category: bug
+  severity: major
+  description: The os.ReadFile error is discarded, so a missing file silently yields an empty config.
+- id: unmarshal-err
+  path: config/config.go
+  line_range: [15, 15]
+  category: bug
+  severity: major
+  description: The json.Unmarshal error is ignored, so invalid JSON returns a zero Config without an error.

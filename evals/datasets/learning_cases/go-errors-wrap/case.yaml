@@ -1,0 +1,9 @@
+id: go-errors-wrap
+language: go
+kind: injected
+title: Add user queries to the store
+description: Adds UserName, Rename and UserIDs to the SQL store.
+source: hand-written
+config:
+  reviews:
+    profile: assertive

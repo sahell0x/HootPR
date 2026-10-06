@@ -1,0 +1,36 @@
+{
+  "name": "HootPR",
+  "url": "https://github.com/YOUR-USER/hootpr",
+  "description": "AI code reviews for pull requests (portfolio project).",
+  "public": true,
+  "hook_attributes": { "url": "https://smee.io/YOUR-CHANNEL", "active": true },
+  "redirect_url": "http://localhost:3000/",
+  "callback_urls": ["http://localhost:8000/api/auth/github/callback"],
+  "setup_url": "http://localhost:8000/api/github/setup",
+  "setup_on_update": true,
+  "request_oauth_on_install": false,
+  "default_permissions": {
+    "actions": "read",
+    "members": "read",
+    "metadata": "read",
+    "discussions": "read",
+    "merge_queues": "read",
+    "checks": "write",
+    "contents": "write",
+    "statuses": "write",
+    "issues": "write",
+    "pull_requests": "write",
+    "workflows": "write"
+  },
+  "default_events": [
+    "pull_request",
+    "pull_request_review",
+    "pull_request_review_comment",
+    "pull_request_review_thread",
+    "issue_comment",
+    "issues",
+    "check_run",
+    "push",
+    "workflow_run"
+  ]
+}

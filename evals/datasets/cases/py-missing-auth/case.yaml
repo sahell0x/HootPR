@@ -1,0 +1,6 @@
+id: py-missing-auth
+language: python
+kind: injected
+title: Add endpoint to delete users
+description: Adds a DELETE /admin/users/{id} route next to the existing admin listing.
+source: hand-written

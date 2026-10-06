@@ -1,0 +1,6 @@
+id: go-n-plus-one
+language: go
+kind: injected
+title: Resolve user names for orders
+description: Fills in UserNames so the orders page can show who placed each order.
+source: hand-written

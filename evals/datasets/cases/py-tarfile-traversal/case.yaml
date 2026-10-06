@@ -1,0 +1,6 @@
+id: py-tarfile-traversal
+language: python
+kind: cve_reversed
+title: Simplify archive extraction
+description: Removes the per-member path check to make extraction shorter.
+source: CVE-2007-4559 (tarfile path traversal), check removed

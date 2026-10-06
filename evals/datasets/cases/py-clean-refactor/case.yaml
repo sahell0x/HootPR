@@ -1,0 +1,6 @@
+id: py-clean-refactor
+language: python
+kind: clean
+title: Tidy slugify
+description: Adds type hints and a docstring; behavior is unchanged.
+source: hand-written
