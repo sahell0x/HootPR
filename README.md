@@ -1,10 +1,10 @@
 # HootPR
 
-HootPR is an AI code-review platform for **GitHub.com** and **GitLab.com**, modelled feature-for-feature
-on CodeRabbit (minus Slack/Discord/IDE/CLI). When a pull request (PR) or merge request (MR) is opened or
-updated, HootPR clones the code into an isolated sandbox, runs static analysis and security scanners,
-investigates the change with LLM agents, filters out false positives with a judge model, and posts a
-**walkthrough** comment, **inline review comments** with suggested fixes, and a **check / commit status**.
+HootPR is an AI code-review platform for **GitHub.com** and **GitLab.com**. When a pull request (PR) or
+merge request (MR) is opened or updated, HootPR clones the code into an isolated sandbox, runs static
+analysis and security scanners, investigates the change with LLM agents, filters out false positives with
+a judge model, and posts a **walkthrough** comment, **inline review comments** with suggested fixes, and a
+**check / commit status**.
 
 Developers talk to it in the PR thread (`@hootpr ...`), configure it with `.hootpr.yaml` or the dashboard,
 and organizations pay with **credits**. Everything runs from one `docker compose up` on a small VM, and
@@ -12,11 +12,10 @@ any OpenAI-compatible LLM provider can be plugged in through `.env`.
 
 > HootPR is a personal portfolio project. Payments run in Razorpay **test mode** only to demonstrate the billing integration — no real money is charged or accepted. Credits are deliberately limited because the AI costs are paid by the author.
 
-**Status:** Phase 3 (Chat & config) — on top of Phase 1 (sign-in, orgs, GitHub App install, GitLab bot,
-webhook ingestion, credits/rate limits/test billing, LLM gateway) and Phase 2 (the review engine in a sealed
-sandbox, CodeRabbit-style walkthroughs and inline comments, trace viewer, eval suite), HootPR now answers
-`@hootpr` commands and questions in PR threads, learns team preferences from chat, and reads the full
-`.hootpr.yaml` schema (path/AST-grep instructions, code guidelines, request-changes workflow). Design:
+HootPR includes sign-in, organizations, GitHub App installation, GitLab bot reviews, webhook ingestion,
+credits, rate limits, test-mode billing, an OpenAI-compatible LLM gateway, sandboxed review analysis,
+walkthroughs, inline comments, a trace viewer, an eval suite, PR-thread chat, team learnings and the full
+`.hootpr.yaml` configuration schema. Design notes live in
 [`docs/superpowers/specs/2026-09-28-hootpr-architecture-design.md`](docs/superpowers/specs/2026-09-28-hootpr-architecture-design.md).
 
 ---
@@ -140,7 +139,8 @@ set `hook_attributes.url` to `{API_BASE_URL}/api/webhooks/github` (your tunnel h
 in `redirect_url` and `http://localhost:8000` with your `API_BASE_URL` in `callback_urls` and `setup_url`, and set `url`/`name` (App names are globally unique).
 Then register it with GitHub's
 [“Register a GitHub App from a manifest”](https://docs.github.com/en/apps/sharing-github-apps/registering-a-github-app-from-a-manifest)
-flow for your account or organization. The manifest requests CodeRabbit's permission set.
+flow for your account or organization. The manifest requests the repository and organization permissions
+HootPR needs to review pull requests and post results.
 
 **Option B: manually.** GitHub → Settings → Developer settings → GitHub Apps → **New GitHub App**:
 
@@ -188,7 +188,7 @@ Self-managed GitLab: also set `GITLAB_BASE_URL`.
 
 ## 5. GitLab bot user (reviews on GitLab)
 
-Like CodeRabbit, HootPR comments on GitLab as a separate bot account:
+HootPR comments on GitLab as a separate bot account:
 
 1. Create a separate GitLab.com account (e.g. `yourname-hootpr`).
 2. Add it as **Developer** (or higher) to the group or projects to review.
@@ -284,7 +284,7 @@ inside the t3.small budget (spec §11.3). Code graphs and tool results are cache
 Engine limits (files/lines per review, tasks, comments, agent steps and tokens, sandbox memory/CPU,
 timeouts, judge thresholds, cache TTL) are settings documented in [`.env.example`](.env.example).
 
-## 9. Chat & config (Phase 3)
+## 9. Chat & config
 
 **Commands.** Mention the bot (`@<GITHUB_APP_SLUG>` on GitHub, the GitLab bot user on GitLab; written
 `@hootpr` below) in a PR/MR comment. The text after the mention must be exactly one of these phrases,
@@ -305,8 +305,7 @@ otherwise it is a free-form question:
 | anything else | the chat agent answers (can read files and run read-only commands in a sealed sandbox) | metered (~50 credits) |
 
 Replies inside a HootPR review thread need no mention (`chat.auto_reply`, default on). Chat replies have
-their own hourly rate limit; finishing-touch commands (autofix, docstrings, unit tests, ...) reply
-"not available in HootPR yet" for free.
+their own hourly rate limit.
 
 **Learnings.** Tell HootPR a preference in a thread ("we use `print()` for CLI output here, don't flag it")
 and the chat agent stores it as a *learning* (credential-redacted, embedded with `LLM_EMBED_MODEL`,
@@ -321,7 +320,7 @@ branch only.
 `.hootpr.yaml` from the PR's **base** branch (a PR cannot change how it is reviewed; an invalid or changed
 head file gets a note with line numbers in the walkthrough). It covers profile/tone/language, path
 filters, `path_instructions`, `ast_grep_instructions` + ast-grep rule directories and the
-ast-grep-essentials pack (see [`sandbox/README.md`](sandbox/README.md#ast-grep-phase-3)), per-tool
+ast-grep-essentials pack (see [`sandbox/README.md`](sandbox/README.md)), per-tool
 switches, `request_changes_workflow` (blocking comments request changes; resolving them all approves),
 chat and knowledge-base options. The JSON schema is served at `<API_BASE_URL>/schema/hootpr.v1.json`
 (committed as `backend/hootpr.v1.schema.json`, regenerated by `make api-types`); add this first line for
