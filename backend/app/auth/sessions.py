@@ -80,10 +80,25 @@ def set_auth_cookies(response: Response, settings: Settings, sid: str, csrf: str
         domain=_domain(settings),
     )
     set_csrf_cookie(response, settings, csrf)
+    response.set_cookie(
+        "hootpr_authed",
+        "1",
+        max_age=SESSION_TTL_S,
+        httponly=False,
+        samesite=settings.cookie_samesite,
+        secure=settings.cookie_secure,
+        path="/",
+        domain=_domain(settings),
+    )
 
 
 def clear_auth_cookies(response: Response, settings: Settings) -> None:
-    for name, httponly in ((SESSION_COOKIE, True), (CSRF_COOKIE, False)):
+    for name, httponly in (
+        (SESSION_COOKIE, True),
+        (CSRF_COOKIE, False),
+        ("hootpr_authed", False),
+        ("hootpr_last_org", False),
+    ):
         response.delete_cookie(
             name,
             path="/",
