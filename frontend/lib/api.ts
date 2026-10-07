@@ -1,4 +1,5 @@
 import type * as T from "./api-types";
+import { clearAuthStorage, setAuthHint } from "./auth-storage";
 import { apiUrl } from "./runtime-config";
 
 export class ApiError extends Error {
@@ -84,8 +85,14 @@ export async function apiFetch<R>(path: string, init: { method?: string; body?: 
     data = await read(res);
   }
   if (res.status === 204) return undefined as R;
-  if (!res.ok) throw toApiError(res.status, data);
-  if (path === "/api/me") setCsrfToken((data as { csrf_token?: string } | null)?.csrf_token ?? csrfToken);
+  if (!res.ok) {
+    if (res.status === 401 && path === "/api/me") setAuthHint(false);
+    throw toApiError(res.status, data);
+  }
+  if (path === "/api/me") {
+    setCsrfToken((data as { csrf_token?: string } | null)?.csrf_token ?? csrfToken);
+    setAuthHint(true);
+  }
   return data as R;
 }
 
@@ -101,7 +108,13 @@ const seg = (s: string) => encodeURIComponent(s);
 export const api = {
   me: () => apiFetch<T.Me>("/api/me"),
   meta: () => apiFetch<T.Meta>("/api/meta"),
-  logout: () => apiFetch<void>("/api/auth/logout", { method: "POST" }),
+  logout: async () => {
+    try {
+      await apiFetch<void>("/api/auth/logout", { method: "POST" });
+    } finally {
+      clearAuthStorage();
+    }
+  },
   orgCandidates: () => apiFetch<T.OrgCandidateList>("/api/orgs/candidates"),
   orgs: () => apiFetch<T.OrgList>("/api/orgs"),
   selectOrg: (body: T.SelectOrgRequest) => apiFetch<T.Org>("/api/orgs/select", { method: "POST", body }),

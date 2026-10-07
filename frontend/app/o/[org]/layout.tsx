@@ -8,6 +8,7 @@ import { ShellErrorFrame, ShellErrorPanel } from "@/components/cr/shell-error";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ApiError } from "@/lib/api";
+import { setAuthHint, setLastOrg } from "@/lib/auth-storage";
 import { useMe, useOrg } from "@/lib/queries";
 import { useOrgSlug } from "@/lib/use-org-slug";
 
@@ -20,7 +21,17 @@ export default function OrgLayout({ children }: { children: ReactNode }) {
   const unauthenticated = me.error instanceof ApiError && me.error.status === 401;
 
   useEffect(() => {
-    if (unauthenticated) router.replace(`/login?next=${encodeURIComponent(pathname)}`);
+    if (slug) {
+      setLastOrg(slug);
+      setAuthHint(true);
+    }
+  }, [slug]);
+
+  useEffect(() => {
+    if (unauthenticated) {
+      setAuthHint(false);
+      router.replace(`/login?next=${encodeURIComponent(pathname)}`);
+    }
   }, [unauthenticated, pathname, router]);
 
   if (unauthenticated) return null;

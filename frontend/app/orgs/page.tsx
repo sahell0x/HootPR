@@ -16,6 +16,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { api, ApiError, loginUrl } from "@/lib/api";
 import type { OrgCandidate, OrgKind, Provider, Role } from "@/lib/api-types";
+import { setAuthHint, setLastOrg } from "@/lib/auth-storage";
 import { qk, useMe, useOrgCandidates } from "@/lib/queries";
 
 const ROLE_LABEL: Record<Role, string> = { admin: "Admin", member: "Member", billing_admin: "Billing admin" };
@@ -87,7 +88,12 @@ export default function OrgsPage() {
   const candidates = useOrgCandidates();
 
   useEffect(() => {
+    if (me.data) setAuthHint(true);
+  }, [me.data]);
+
+  useEffect(() => {
     if (me.error instanceof ApiError && me.error.status === 401) {
+      setAuthHint(false);
       router.replace(`/login?next=${encodeURIComponent("/orgs")}`);
     } else if (candidates.error instanceof ApiError && candidates.error.code === "reauth_required") {
       router.replace("/login?error=oauth_failed");
@@ -97,6 +103,7 @@ export default function OrgsPage() {
   const select = useMutation({
     mutationFn: (c: OrgCandidate) => api.selectOrg({ provider: c.provider, provider_org_id: c.provider_org_id }),
     onSuccess: async (org) => {
+      setLastOrg(org.slug);
       await qc.invalidateQueries({ queryKey: qk.orgs });
       router.push(`/o/${org.slug}/repos`);
     },

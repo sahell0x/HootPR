@@ -10,6 +10,7 @@ import { useShellSlots } from "@/components/cr/shell-slots";
 import { ShellTopbar } from "@/components/cr/shell-topbar";
 import { api, ApiError } from "@/lib/api";
 import type { Me, Org } from "@/lib/api-types";
+import { clearAuthStorage } from "@/lib/auth-storage";
 import { formatCredits } from "@/lib/format";
 import { qk } from "@/lib/queries";
 import { cn } from "@/lib/utils";
@@ -25,6 +26,8 @@ async function signOut() {
       toast.error("Could not sign out. Try again.");
       return;
     }
+  } finally {
+    clearAuthStorage();
   }
   window.location.href = "/";
 }
