@@ -10,7 +10,7 @@ async def test_meta(client: httpx.AsyncClient) -> None:
     assert body["github_install_url"] == "https://github.com/apps/hootpr-test/installations/new"
     assert body["gitlab_base_url"] == "https://gitlab.com"
     assert body["razorpay_key_id"] == "rzp_test_key123" and body["billing_test_mode"] is True
-    assert body["credit_pack"] == {"credits": 500, "price_paise": 4900, "currency": "INR"}
+    assert body["credit_pack"] == {"credits": 200, "price_paise": 9900, "currency": "INR"}
     assert "test mode" in body["disclaimer"] and "no real money" in body["disclaimer"]
     assert "**" not in body["disclaimer"]
     assert body["providers_enabled"] == {"github": True, "gitlab": True}

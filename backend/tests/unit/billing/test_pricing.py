@@ -52,14 +52,14 @@ def test_rate_card_from_settings_and_custom() -> None:
 def test_estimate_review_hold() -> None:
     # files only (GitLab): 40 lines per file assumed -> 100 + 120 * 0.4 + 3 * 5 = 163
     assert estimate_review_hold(None, 3, S) == Decimal("163")
-    assert estimate_review_hold(None, None, S) == Decimal("1000")
-    assert estimate_review_hold(100, None, S) == Decimal("1000")
+    assert estimate_review_hold(None, None, S) == Decimal("500")
+    assert estimate_review_hold(100, None, S) == Decimal("500")
     assert estimate_review_hold(0, 0, S) == Decimal("100")
     # 100 + 500 * 0.4 + 10 * 5 = 350
     assert estimate_review_hold(500, 10, S) == Decimal("350")
     # 100 + 3 * 0.4 + 1 * 5 = 106.2 -> rounded up to a whole credit
     assert estimate_review_hold(3, 1, S) == Decimal("107")
-    assert estimate_review_hold(100_000, 500, S) == Decimal("1000")  # clamped to max
+    assert estimate_review_hold(100_000, 500, S) == Decimal("500")  # clamped to max
     tiny = Settings(_env_file=None, review_hold_base=Decimal("0"))  # type: ignore[arg-type]
     assert estimate_review_hold(1, 0, tiny) == Decimal("10")  # clamped to min
     assert estimate_review_hold(3, 1, S).as_tuple().exponent == 0

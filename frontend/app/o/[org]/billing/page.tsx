@@ -274,7 +274,7 @@ export default function BillingPage() {
             {low ? <span className="mt-0.5 block text-caution">Not enough for a review — buy a credit pack below.</span> : null}
           </>}
         />
-        <StatTile label="Packs" value={`${data.purchases_count} / ${data.max_purchases} packs bought`}
+        <StatTile label="Packs" value={`${data.purchases_count} / ${data.max_purchases} ${data.max_purchases === 1 ? "pack" : "packs"} bought`}
           hint={packsLeft ? `${packsLeft} more available` : "Pack limit reached"} />
         <StatTile label="Maximum balance" value={<>{formatCredits(data.max_balance)} <span className="text-sm font-normal text-muted-foreground">credits</span></>}
           hint="Balance cap per organization" />
@@ -310,7 +310,7 @@ export default function BillingPage() {
             features={<>
               <Feature>{formatCredits(data.pack.credits)} credits per pack</Feature>
               <Feature>≈ {reviewsFor(data.pack.credits, TYPICAL_REVIEW_CREDITS)} typical pull request reviews</Feature>
-              <Feature>Up to {data.max_purchases} packs per organization</Feature>
+              <Feature>Up to {data.max_purchases} {data.max_purchases === 1 ? "pack" : "packs"} per organization</Feature>
               <Feature>Pay by card or UPI via Razorpay</Feature>
             </>}
           />

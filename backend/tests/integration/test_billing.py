@@ -44,7 +44,7 @@ async def create_order(
         route = mock.post(f"{RZP}/orders").mock(
             return_value=httpx.Response(
                 status,
-                json={"id": order_id, "amount": 4900, "currency": "INR", "status": "created"},
+                json={"id": order_id, "amount": 9900, "currency": "INR", "status": "created"},
             )
         )
         resp = await client.post("/api/orgs/acme/billing/orders")
@@ -52,15 +52,15 @@ async def create_order(
             req = route.calls[0].request
             assert req.headers["Authorization"].startswith("Basic ")
             body = json.loads(req.content)
-            assert body["amount"] == 4900 and body["currency"] == "INR" and body["notes"]["org_id"]
+            assert body["amount"] == 9900 and body["currency"] == "INR" and body["notes"]["org_id"]
     return resp
 
 
 async def test_billing_summary(client: httpx.AsyncClient, admin: Organization) -> None:
     body = (await client.get("/api/orgs/acme/billing")).json()
     assert body["balance"] == "300" and body["can_purchase"] is True and body["test_mode"] is True
-    assert body["pack"] == {"credits": 500, "price_paise": 4900, "currency": "INR"}
-    assert body["max_purchases"] == 2 and body["max_balance"] == "1000"
+    assert body["pack"] == {"credits": 200, "price_paise": 9900, "currency": "INR"}
+    assert body["max_purchases"] == 1 and body["max_balance"] == "500"
     assert body["ledger"][0]["reason"] == "manual"
     assert body["ledger"][0]["delta"] == "300" and body["ledger"][0]["balance_after"] == "300"
     assert "no real money" in body["disclaimer"]
@@ -73,7 +73,7 @@ async def test_order_then_verify_adds_five_credits(
     assert resp.status_code == 201
     order = resp.json()
     assert order["order_id"] == "order_ABC" and order["key_id"] == "rzp_test_key123"
-    assert order["amount_paise"] == 4900 and "test mode" in order["description"].lower()
+    assert order["amount_paise"] == 9900 and "test mode" in order["description"].lower()
     assert order["prefill"] == {"email": "alice@example.com", "name": "Alice"}
     verify = await client.post(
         "/api/billing/verify",
@@ -84,7 +84,7 @@ async def test_order_then_verify_adds_five_credits(
         },
     )
     assert verify.status_code == 200
-    assert verify.json() == {"status": "paid", "credits_added": "500", "balance": "800"}
+    assert verify.json() == {"status": "paid", "credits_added": "200", "balance": "500"}
     again = await client.post(
         "/api/billing/verify",
         json={
@@ -93,7 +93,7 @@ async def test_order_then_verify_adds_five_credits(
             "razorpay_signature": sig("order_ABC", "pay_1"),
         },
     )
-    assert again.json() == {"status": "paid", "credits_added": "500", "balance": "800"}
+    assert again.json() == {"status": "paid", "credits_added": "200", "balance": "500"}
     org = db.execute(select(Organization)).scalar_one()
     db.refresh(org)
     assert org.purchases_count == 1
@@ -131,13 +131,13 @@ async def test_verify_order_of_other_org_is_404(
 
 async def test_purchase_caps(client: httpx.AsyncClient, admin: Organization, db: Session) -> None:
     org = db.execute(select(Organization)).scalar_one()
-    org.purchases_count = 2
+    org.purchases_count = 1
     db.commit()
     resp = await create_order(client)
     assert resp.status_code == 409 and resp.json()["detail"]["code"] == "purchase_cap_reached"
     org.purchases_count = 0
     db.commit()
-    CreditLedger().grant(db, org.id, Decimal("300"), "manual")  # balance 600 + 500 > 1000
+    CreditLedger().grant(db, org.id, Decimal("100"), "manual")  # balance 400 + 200 > 500
     db.commit()
     resp = await create_order(client)
     assert resp.status_code == 409 and resp.json()["detail"]["code"] == "balance_cap_exceeded"
@@ -199,7 +199,7 @@ async def test_fulfill_twice_credits_once(
     assert sorted(r.status for r in results) == ["already_paid", "already_paid", "paid"]
     org = db.execute(select(Organization)).scalar_one()
     db.refresh(org)
-    assert org.credits_balance == Decimal("800") and org.purchases_count == 1
+    assert org.credits_balance == Decimal("500") and org.purchases_count == 1
     purchases = (
         db.execute(select(CreditLedgerEntry).where(CreditLedgerEntry.reason == "purchase"))
         .scalars()
@@ -218,35 +218,39 @@ async def test_over_cap_race_clamps_credits(
 ) -> None:
     await create_order(client)
     org = db.execute(select(Organization)).scalar_one()
-    CreditLedger().grant(db, org.id, Decimal("400"), "manual")  # balance 700; a pack makes 1200
+    CreditLedger().grant(db, org.id, Decimal("100"), "manual")  # balance 400; a pack of 200 makes 600 > 500
     db.commit()
     res = fulfill(db, CreditLedger(), int_settings, "order_ABC", "pay_9")
     db.commit()
-    assert res.status == "paid" and res.credits_added == Decimal("300")
-    assert res.balance == Decimal("1000")
+    assert res.status == "paid" and res.credits_added == Decimal("100")
+    assert res.balance == Decimal("500")
     assert db.execute(select(Payment)).scalar_one().over_cap is True
 
 
-async def test_pending_orders_count_against_purchase_cap(
+async def test_cancelled_order_does_not_expire_purchase_slot(
     client: httpx.AsyncClient, admin: Organization, db: Session
 ) -> None:
-    org = db.execute(select(Organization)).scalar_one()
-    org.credits_balance = Decimal("0")
-    db.commit()
-    assert (await create_order(client, "order_1")).status_code == 201
-    assert (await create_order(client, "order_2")).status_code == 201
-    third = await create_order(client, "order_3")
-    assert third.status_code == 409 and third.json()["detail"]["code"] == "purchase_cap_reached"
+    resp1 = await create_order(client, "order_1")
+    assert resp1.status_code == 201
+    cancel_resp = await client.post("/api/orgs/acme/billing/orders/order_1/cancel")
+    assert cancel_resp.status_code == 204
+    # Organization can still purchase because credits were not added
+    resp2 = await create_order(client, "order_2")
+    assert resp2.status_code == 201
     summary = (await client.get("/api/orgs/acme/billing")).json()
-    assert summary["can_purchase"] is False
+    assert summary["can_purchase"] is True
 
 
-async def test_pending_order_credits_count_against_balance_cap(
-    client: httpx.AsyncClient, admin: Organization
+async def test_unpaid_order_superseded_on_new_checkout(
+    client: httpx.AsyncClient, admin: Organization, db: Session
 ) -> None:
-    assert (await create_order(client, "order_1")).status_code == 201  # 3 + 5 pending = 8
-    second = await create_order(client, "order_2")  # 8 + 5 > 10
-    assert second.status_code == 409 and second.json()["detail"]["code"] == "balance_cap_exceeded"
+    resp1 = await create_order(client, "order_1")
+    assert resp1.status_code == 201
+    # Creating a new order succeeds and supersedes the old created order
+    resp2 = await create_order(client, "order_2")
+    assert resp2.status_code == 201
+    p1 = db.execute(select(Payment).where(Payment.razorpay_order_id == "order_1")).scalar_one()
+    assert p1.status == "cancelled"
 
 
 async def test_payment_beyond_purchase_cap_grants_nothing(

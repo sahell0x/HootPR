@@ -6,8 +6,8 @@ import { jsonResponse, renderWithQuery } from "../utils";
 
 const orgBody = (role: string) => ({ id: "o1", slug: "acme", provider: "github", kind: "org", name: "acme",
   avatar_url: null, role, credits_balance: "200.00", installed: true, knowledge_base_opt_out: false });
-const billing = { balance: "200.00", purchases_count: 1, max_purchases: 2, max_balance: "1000.00",
-  pack: { credits: 500, price_paise: 4900, currency: "INR" }, can_purchase: true, purchase_blocked_reason: null,
+const billing = { balance: "200.00", purchases_count: 0, max_purchases: 1, max_balance: "500.00",
+  pack: { credits: 200, price_paise: 9900, currency: "INR" }, can_purchase: true, purchase_blocked_reason: null,
   disclaimer: "d", test_mode: true, ledger: [
     { id: "l2", delta: "-100.00", reason: "review_hold", ref_type: "review", ref_id: "x", balance_after: "200.00", created_at: "2026-09-28T10:00:00Z" },
     { id: "l1", delta: "300.00", reason: "signup_bonus", ref_type: "organization", ref_id: "o1", balance_after: "300.00", created_at: "2026-09-28T09:00:00Z" }] };
@@ -16,16 +16,16 @@ test("shows balance, caps and ledger without a site-wide test-mode notice", asyn
   vi.stubGlobal("fetch", vi.fn(async (url: string) =>
     url === "/api/orgs/acme" ? jsonResponse(orgBody("member")) : jsonResponse(billing)));
   renderWithQuery(<BillingPage />);
-  expect(await screen.findByText("1 / 2 packs bought")).toBeInTheDocument();
+  expect(await screen.findByText("0 / 1 pack bought")).toBeInTheDocument();
   expect(screen.getByText("Signup bonus")).toBeInTheDocument();
   expect(screen.getByText("+300")).toBeInTheDocument();
   expect(screen.getByText("-100")).toBeInTheDocument();
   expect(screen.queryByText(/no real money/i)).not.toBeInTheDocument();
-  expect(screen.getByRole("button", { name: /buy 500 credits/i })).toBeDisabled();
+  expect(screen.getByRole("button", { name: /buy 200 credits/i })).toBeDisabled();
   expect(screen.getByText(/only admins and billing admins/i)).toBeInTheDocument();
 });
 
-const metering = { review_min_charge: "10.00", review_hold_max: "1000.00", chat_min_charge: "5.00",
+const metering = { review_min_charge: "10.00", review_hold_max: "500.00", chat_min_charge: "5.00",
   avg_review_credits_30d: "112", reviews_30d: 14 };
 
 test("explains metering with the org's 30-day average and no flat per-review price", async () => {
@@ -38,7 +38,7 @@ test("explains metering with the org's 30-day average and no flat per-review pri
   }));
   renderWithQuery(<BillingPage />);
   const section = await screen.findByRole("region", { name: "How credits are metered" });
-  expect(section).toHaveTextContent(/reserves credits up front based on the pull request's size, up to 1,000 credits/);
+  expect(section).toHaveTextContent(/reserves credits up front based on the pull request's size, up to 500 credits/);
   expect(section).toHaveTextContent(/minimum of 10 credits per review/);
   expect(section).toHaveTextContent(/returns|goes back to your balance instantly/);
   expect(screen.getByTestId("metering-average")).toHaveTextContent("Average review: 112 credits (last 30 days, 14 reviews)");

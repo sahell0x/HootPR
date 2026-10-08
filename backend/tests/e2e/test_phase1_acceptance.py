@@ -366,7 +366,7 @@ async def create_order(client: httpx.AsyncClient, order_id: str) -> httpx.Respon
         mock.route(host="testserver").pass_through()
         mock.post("https://api.razorpay.com/v1/orders").mock(
             return_value=httpx.Response(
-                200, json={"id": order_id, "amount": 4900, "currency": "INR", "status": "created"}
+                200, json={"id": order_id, "amount": 9900, "currency": "INR", "status": "created"}
             )
         )
         return await client.post("/api/orgs/acme/billing/orders")
@@ -383,7 +383,8 @@ async def test_buying_packs_adds_a_pack_each_and_caps_are_enforced(
     assert summary["test_mode"] is True and "no real money" in summary["disclaimer"]
 
     pack = Decimal(int_settings.credit_pack_credits)
-    assert 2 * pack == int_settings.max_credit_balance  # two packs reach the balance cap
+    assert pack == Decimal("200")
+    assert int_settings.max_credit_balance == Decimal("500")
 
     # Pack 1: Checkout handler → signature verified → +1 pack.
     first = await create_order(client, "order_E2E1")
@@ -398,31 +399,17 @@ async def test_buying_packs_adds_a_pack_each_and_caps_are_enforced(
     )
     assert verify.json() == {"status": "paid", "credits_added": f"{pack}", "balance": f"{pack}"}
 
-    # Pack 2: fulfilled by the payment.captured webhook instead of the browser → +1 pack.
-    assert (await create_order(client, "order_E2E2")).status_code == 201
-    event = json.loads(fixture_bytes("razorpay", "payment.captured"))
-    event["payload"]["payment"]["entity"].update(order_id="order_E2E2", id="pay_E2E2")
-    raw = json.dumps(event).encode()
-    hook = await client.post(
-        "/api/webhooks/razorpay",
-        content=raw,
-        headers={
-            "X-Razorpay-Signature": sign_razorpay("rzp-webhook-secret", raw),
-            "x-razorpay-event-id": "evt_e2e2",
-            "Content-Type": "application/json",
-        },
-    )
-    assert hook.json() == {"status": "processed"}
-    assert org_balance(db) == 2 * pack
-
-    # Pack 3: both caps (2 purchases, max balance) now block the order.
-    third = await create_order(client, "order_E2E3")
-    assert third.status_code == 409 and third.json()["detail"]["code"] == "purchase_cap_reached"
+    # Pack 2: Purchase cap of 1 now blocks subsequent order.
+    second = await create_order(client, "order_E2E2")
+    assert second.status_code == 409 and second.json()["detail"]["code"] == "purchase_cap_reached"
     summary = (await client.get("/api/orgs/acme/billing")).json()
-    assert summary["can_purchase"] is False and summary["balance"] == f"{2 * pack}"
+    assert summary["can_purchase"] is False and summary["balance"] == f"{pack}"
+
+    # Isolate balance cap: reset purchases_count, but set balance to 400 (400 + 200 > 500)
     db.expire_all()
     fresh = db.execute(select(Organization)).scalar_one()
-    fresh.purchases_count = 0  # isolate the balance cap
+    fresh.purchases_count = 0
+    fresh.credits_balance = Decimal("400")
     db.commit()
-    capped = await create_order(client, "order_E2E4")
+    capped = await create_order(client, "order_E2E3")
     assert capped.status_code == 409 and capped.json()["detail"]["code"] == "balance_cap_exceeded"

@@ -457,7 +457,7 @@ async def test_credit_receipt_and_billing_metering(
     bill = (await client.get("/api/orgs/acme/billing")).json()
     assert bill["metering"] == {
         "review_min_charge": "10",
-        "review_hold_max": "1000",
+        "review_hold_max": "500",
         "chat_min_charge": "5",
         "avg_review_credits_30d": "285",
         "reviews_30d": 1,

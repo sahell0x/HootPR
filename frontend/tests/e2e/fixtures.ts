@@ -5,14 +5,14 @@ export const org = { id: "o1", slug: "acme", provider: "github", kind: "org", na
   role: "admin", credits_balance: "300.00", installed: true, knowledge_base_opt_out: false };
 export const me = { id: "u1", email: "a@example.com", display_name: "Alice", avatar_url: null, csrf_token: "t",
   identities: [{ provider: "github", provider_user_id: "501", username: "alice" }] };
-export const billing = { balance: "300.00", purchases_count: 0, max_purchases: 2, max_balance: "1000.00",
-  pack: { credits: 500, price_paise: 4900, currency: "INR" }, can_purchase: true, purchase_blocked_reason: null,
+export const billing = { balance: "300.00", purchases_count: 0, max_purchases: 1, max_balance: "500.00",
+  pack: { credits: 200, price_paise: 9900, currency: "INR" }, can_purchase: true, purchase_blocked_reason: null,
   ledger: [{ id: "l1", delta: "300.00", reason: "signup_bonus", ref_type: "organization", ref_id: "o1",
     balance_after: "300.00", created_at: "2026-09-28T09:00:00Z" }], disclaimer: "x", test_mode: true };
 
 export const meta = { github_app_slug: "hootpr", github_install_url: "https://github.com/apps/hootpr/installations/new",
   gitlab_base_url: "https://gitlab.com", razorpay_key_id: "rzp_test_x", billing_test_mode: true, disclaimer: "x",
-  credit_pack: { credits: 500, price_paise: 4900, currency: "INR" },
+  credit_pack: { credits: 200, price_paise: 9900, currency: "INR" },
   credit_prices: { per_review: "100", per_chat_reply: "50", signup_bonus: "300" },
   providers_enabled: { github: true, gitlab: true } };
 

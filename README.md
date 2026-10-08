@@ -213,8 +213,8 @@ HootPR comments on GitLab as a separate bot account:
    `payment.captured` and `order.paid`, secret → `RAZORPAY_WEBHOOK_SECRET`.
 4. Test payment details: card `4100 2800 0000 1007` (Indian Visa; Mastercard `5500 6700 0000 1002`), any future expiry, any CVV; UPI `success@razorpay`.
 
-Defaults: 300 free credits per org, packs of 500 credits for ₹49 (test), at most 2 purchases per org
-and a balance cap of 1,000 (all configurable in `.env`). Jobs are metered by AI usage in whole
+Defaults: 300 free credits per org, packs of 200 credits for ₹99 (test), at most 1 purchase per org
+and a balance cap of 500 (all configurable in `.env`). Jobs are metered by AI usage in whole
 credits: a review typically costs about 100 credits, a chat reply about 50
 (see `docs/token-metered-billing.md`).
 

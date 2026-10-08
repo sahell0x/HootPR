@@ -62,7 +62,7 @@ def test_invalid_fernet_key_is_rejected() -> None:
 def test_billing_defaults_match_spec() -> None:
     s = make()
     assert s.credits_signup_bonus == Decimal("300")
-    assert s.review_hold_max == Decimal("1000") and s.review_min_charge == Decimal("10")
+    assert s.review_hold_max == Decimal("500") and s.review_min_charge == Decimal("10")
     assert s.chat_hold_max == Decimal("100") and s.chat_min_charge == Decimal("5")
     assert s.finishing_hold_max == Decimal("300") and s.security_hold_max == Decimal("500")
     assert s.finishing_min_charge == Decimal("10") and s.security_min_charge == Decimal("50")
@@ -73,10 +73,10 @@ def test_billing_defaults_match_spec() -> None:
     assert s.credits_typical_chat_reply == Decimal("50")
     assert s.rate_limit_reviews_per_hour == 2
     assert s.rate_limit_chat_per_hour == 10
-    assert s.credit_pack_credits == 500
-    assert s.credit_pack_price_paise == 4900
-    assert s.max_purchases_per_org == 2
-    assert s.max_credit_balance == Decimal("1000")
+    assert s.credit_pack_credits == 200
+    assert s.credit_pack_price_paise == 9900
+    assert s.max_purchases_per_org == 1
+    assert s.max_credit_balance == Decimal("500")
 
 
 def test_billing_configured_requires_real_test_key_and_secret() -> None:

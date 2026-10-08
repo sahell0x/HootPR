@@ -63,7 +63,7 @@ def test_get_pull_request_sizes_hold_from_changes_count(
     if files == 7:  # 100 + 7 * 40 lines * 0.4 + 7 * 5 = 247
         assert hold == Decimal("247")
     elif files is None or files == 1000:
-        assert hold == Decimal("1000")
+        assert hold == Decimal("500")
 
 
 @respx.mock

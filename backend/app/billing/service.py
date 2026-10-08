@@ -8,7 +8,7 @@ from decimal import Decimal
 from typing import Literal
 from uuid import UUID
 
-from sqlalchemy import Row, Select, func, select
+from sqlalchemy import Row, Select, func, select, update
 from sqlalchemy.orm import Session
 
 from app.billing.ledger import CreditLedger
@@ -38,7 +38,7 @@ class FulfillResult:
 
 @dataclass(frozen=True)
 class Pending:
-    """Open (``created``, not yet paid) orders that still count against the caps."""
+    """Open (``created``, not yet paid) orders."""
 
     count: int = 0
     credits: Decimal = ZERO
@@ -60,15 +60,15 @@ def to_pending(row: Row[int, Decimal]) -> Pending:
 def purchase_check(
     org: Organization, settings: Settings, pending: Pending | None = None
 ) -> PurchaseCheck:
-    pending = pending or Pending()
-    if org.purchases_count + pending.count >= settings.max_purchases_per_org:
+    pack_word = "credit pack" if settings.max_purchases_per_org == 1 else "credit packs"
+    if org.purchases_count >= settings.max_purchases_per_org:
         return PurchaseCheck(
             False,
             "purchase_cap_reached",
             f"This organization already bought the maximum of "
-            f"{settings.max_purchases_per_org} credit packs.",
+            f"{settings.max_purchases_per_org} {pack_word}.",
         )
-    projected = Decimal(org.credits_balance) + pending.credits + settings.credit_pack_credits
+    projected = Decimal(org.credits_balance) + settings.credit_pack_credits
     if projected > settings.max_credit_balance:
         return PurchaseCheck(
             False,
@@ -94,10 +94,15 @@ def create_payment(
 ) -> Payment | PurchaseCheck:
     """Re-check the caps under the org row lock and create a ``created`` payment row."""
     org = _lock_org(s, org_id)
-    pending = to_pending(s.execute(pending_orders_stmt(org.id)).one())
-    check = purchase_check(org, settings, pending)
+    check = purchase_check(org, settings)
     if not check.allowed:
         return check
+    # Cancel any previous unpaid created payments for this org so they do not linger.
+    s.execute(
+        update(Payment)
+        .where(Payment.org_id == org.id, Payment.status == "created")
+        .values(status="cancelled")
+    )
     payment = Payment(
         org_id=org.id,
         user_id=user_id,

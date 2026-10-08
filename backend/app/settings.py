@@ -122,7 +122,7 @@ class Settings(BaseSettings):
     review_hold_base: Decimal = Decimal("100")
     review_hold_per_line: Decimal = Decimal("0.4")
     review_hold_per_file: Decimal = Decimal("5")
-    review_hold_max: Decimal = Decimal("1000")
+    review_hold_max: Decimal = Decimal("500")
     review_min_charge: Decimal = Decimal("10")
     chat_hold_max: Decimal = Decimal("100")
     chat_min_charge: Decimal = Decimal("5")
@@ -133,10 +133,10 @@ class Settings(BaseSettings):
     # Display-only "typical" prices for the public pricing copy (/api/meta); never charged.
     credits_typical_review: Decimal = Decimal("100")
     credits_typical_chat_reply: Decimal = Decimal("50")
-    credit_pack_credits: int = 500
-    credit_pack_price_paise: int = 4900
-    max_purchases_per_org: int = 2
-    max_credit_balance: Decimal = Decimal("1000")
+    credit_pack_credits: int = 200
+    credit_pack_price_paise: int = 9900
+    max_purchases_per_org: int = 1
+    max_credit_balance: Decimal = Decimal("500")
     rate_limit_reviews_per_hour: int = 2
     rate_limit_chat_per_hour: int = 10
 
